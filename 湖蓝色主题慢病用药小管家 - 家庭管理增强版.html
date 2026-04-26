@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>慢病用药小管家</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --primary-light: #7BADE7;
+            --primary-dark: #2C5AA0;
+            --secondary-color: #50C878;
+            --warning-color: #FFB347;
+            --danger-color: #FF6B6B;
+            --info-color: #4ECDC4;
+            --background-color: #F0F8FF;
+            --card-bg: #FFFFFF;
+            --text-primary: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --border-color: #E0E6ED;
+            --shadow: 0 2px 10px rgba(74, 144, 226, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-left h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .header-right nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .header-right nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .header-right nav a:hover,
+        .header-right nav a.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: #fafafa;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.3s;
+            border: none;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        tr:hover {
+            background-color: #f0f8ff;
+        }
+
+        .medication-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .pill-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-pending { 
+            color: var(--warning-color); 
+            font-weight: bold;
+        }
+        .status-completed { 
+            color: var(--secondary-color); 
+            font-weight: bold;
+        }
+        .status-missed { 
+            color: var(--danger-color); 
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .family-member-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .family-member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .family-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .family-stat {
+            text-align: center;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .family-stat-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .family-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .family-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .family-action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .view-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .edit-btn {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .family-tab-content {
+            display: none;
+        }
+
+        .family-tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            
+            .header-right nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .family-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>💧 慢病用药小管家</h1>
+            </div>
+            <div class="header-right">
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active" onclick="showTab('dashboard')">首页</a></li>
+                        <li><a href="#" onclick="showTab('medications')">药品库</a></li>
+                        <li><a href="#" onclick="showTab('schedule')">用药计划</a></li>
+                        <li><a href="#" onclick="showTab('appointments')">复诊管理</a></li>
+                        <li><a href="#" onclick="showTab('family')">家人管理</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 首页仪表盘 -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>📋 今日服药清单</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="pending-count">3</div>
+                            <div class="stat-label">待服用</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="completed-count">2</div>
+                            <div class="stat-label">已完成</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="missed-count">0</div>
+                            <div class="stat-label">漏服</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p><span class="pill-icon"></span> 氨氯地平片 08:00 - <span class="status-pending">待服用</span></p>
+                        <p><span class="pill-icon"></span> 阿司匹林肠溶片 20:00 - <span class="status-pending">待服用</span></p>
+                        <p><span class="pill-icon"></span> 二甲双胍缓释片 12:00 - <span class="status-completed">已完成</span></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>⏰ 下次复诊提醒</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="appointment-days">7</div>
+                            <div class="stat-label">天后复诊</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p><strong>心血管内科</strong></p>
+                        <p>李医生 • 北京协和医院</p>
+                        <p>2024-01-15</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📦 药品余量预警</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="low-stock-count">2</div>
+                            <div class="stat-label">需补充</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p style="color: var(--danger-color);"><span class="pill-icon"></span> 氨氯地平片 (剩余5片)</p>
+                        <p style="color: var(--warning-color);"><span class="pill-icon"></span> 阿司匹林肠溶片 (剩余12片)</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📊 本周服药依从率</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="adherence-rate">95%</div>
+                            <div class="stat-label">依从率</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 95%;"></div>
+                        </div>
+                        <p style="text-align: center; margin-top: 10px; color: var(--primary-dark);">优秀！继续保持</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚡ 快捷入口</h3>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="showTab('add-medication')">
+                        ➕ 新增用药
+                    </button>
+                    <button class="action-btn" onclick="showTab('add-appointment')">
+                        📅 新增复诊
+                    </button>
+                    <button class="action-btn" onclick="showTab('family')">
+                        👨‍👩‍👧‍👦 添加家人
+                    </button>
+                    <button class="action-btn">
+                        📊 记录身体数据
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 药品库 -->
+        <div id="medications" class="tab-content">
+            <div class="card">
+                <h3>💧 个人药品库</h3>
+                
+                <div class="form-group">
+                    <label>🔍 快速搜索药品</label>
+                    <input type="text" placeholder="输入药品名称、拼音或通用名...">
+                </div>
+
+                <div class="medication-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>药品名称</th>
+                                <th>规格</th>
+                                <th>用法用量</th>
+                                <th>余量</th>
+                                <th>有效期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>氨氯地平片</td>
+                                <td>5mg×28片</td>
+                                <td>每日1次，每次1片</td>
+                                <td style="color: var(--danger-color); font-weight: bold;">5片</td>
+                                <td style="color: var(--danger-color); font-weight: bold;">2024-02-15</td>
+                                <td>
+                                    <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">编辑</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>阿司匹林肠溶片</td>
+                                <td>100mg×30片</td>
+                                <td>每日1次，每次1片</td>
+                                <td style="color: var(--warning-color); font-weight: bold;">12片</td>
+                                <td>2024-03-20</td>
+                                <td>
+                                    <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">编辑</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>二甲双胍缓释片</td>
+                                <td>0.5g×20片</td>
+                                <td>每日2次，每次1片</td>
+                                <td style="color: var(--secondary-color); font-weight: bold;">18片</td>
+                                <td>2024-04-10</td>
+                                <td>
+                                    <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">编辑</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button class="btn" style="margin-top: 20px;" onclick="showTab('add-medication')">
+                    + 添加新药品
+                </button>
+            </div>
+        </div>
+
+        <!-- 用药计划 -->
+        <div id="schedule" class="tab-content">
+            <div class="card">
+                <h3>⏰ 用药计划管理</h3>
+                
+                <div class="form-group">
+                    <label>选择药品</label>
+                    <select>
+                        <option>氨氯地平片</option>
+                        <option>阿司匹林肠溶片</option>
+                        <option>二甲双胍缓释片</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>服药时间</label>
+                    <input type="time" value="08:00">
+                    <input type="time" value="20:00" style="margin-left: 10px;">
+                </div>
+
+                <div class="form-group">
+                    <label>服药频次</label>
+                    <select>
+                        <option>每天</option>
+                        <option>工作日</option>
+                        <option>每周一、三、五</option>
+                        <option>自定义</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>疗程设置</label>
+                    <input type="date" placeholder="开始日期">
+                    <input type="date" placeholder="结束日期" style="margin-left: 10px;">
+                </div>
+
+                <button class="btn">💾 保存用药计划</button>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>📅 今日服药记录</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>药品</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>08:00</td>
+                            <td>氨氯地平片</td>
+                            <td><span class="status-pending">待服用</span></td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">✅ 已服用</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>12:00</td>
+                            <td>二甲双胍缓释片</td>
+                            <td><span class="status-completed">已完成</span></td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>20:00</td>
+                            <td>阿司匹林肠溶片</td>
+                            <td><span class="status-pending">待服用</span></td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">✅ 已服用</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 复诊管理 -->
+        <div id="appointments" class="tab-content">
+            <div class="card">
+                <h3>🏥 复诊管理</h3>
+                
+                <div class="form-group">
+                    <label>复诊科室</label>
+                    <select>
+                        <option>心血管内科</option>
+                        <option>内分泌科</option>
+                        <option>神经内科</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>主治医生</label>
+                    <input type="text" placeholder="请输入医生姓名">
+                </div>
+
+                <div class="form-group">
+                    <label>医院名称</label>
+                    <input type="text" placeholder="请输入医院名称">
+                </div>
+
+                <div class="form-group">
+                    <label>下次复诊日期</label>
+                    <input type="date">
+                </div>
+
+                <div class="form-group">
+                    <label>复诊备注</label>
+                    <textarea rows="3" placeholder="如：需要携带近期检查报告、空腹要求等"></textarea>
+                </div>
+
+                <button class="btn">📅 添加复诊计划</button>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>📋 复诊计划列表</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>科室</th>
+                            <th>医生</th>
+                            <th>医院</th>
+                            <th>复诊日期</th>
+                            <th>剩余天数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>心血管内科</td>
+                            <td>李医生</td>
+                            <td>北京协和医院</td>
+                            <td>2024-01-15</td>
+                            <td style="color: var(--warning-color); font-weight: bold;">7天</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">详情</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>内分泌科</td>
+                            <td>王医生</td>
+                            <td>北京大学人民医院</td>
+                            <td>2024-02-20</td>
+                            <td style="color: var(--primary-color);">38天</td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">详情</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 家人管理 -->
+        <div id="family" class="tab-content">
+            <div class="card">
+                <h3>👨‍👩‍👧‍👦 家人健康管理</h3>
+                
+                <div class="form-group">
+                    <label>家人姓名</label>
+                    <input type="text" placeholder="请输入家人姓名">
+                </div>
+
+                <div class="form-group">
+                    <label>关系</label>
+                    <select>
+                        <option>配偶</option>
+                        <option>父亲</option>
+                        <option>母亲</option>
+                        <option>子女</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>性别</label>
+                    <select>
+                        <option>男</option>
+                        <option>女</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>年龄</label>
+                    <input type="number" placeholder="请输入年龄">
+                </div>
+
+                <div class="form-group">
+                    <label>主要疾病</label>
+                    <input type="text" placeholder="如：高血压、糖尿病等">
+                </div>
+
+                <div class="form-group">
+                    <label>联系电话</label>
+                    <input type="tel" placeholder="请输入联系电话">
+                </div>
+
+                <button class="btn" onclick="addFamilyMember()">👥 添加家人信息</button>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>家人列表</h3>
+                <div id="family-members-list">
+                    <!-- 家人卡片将通过JavaScript动态生成 -->
+                    <div class="family-member-card">
+                        <div class="family-member-header">
+                            <h4>张三 (父亲)</h4>
+                            <span>高血压</span>
+                        </div>
+                        <div class="family-stats">
+                            <div class="family-stat">
+                                <div class="family-stat-number">2/3</div>
+                                <div class="family-stat-label">今日服药</div>
+                            </div>
+                            <div class="family-stat">
+                                <div class="family-stat-number">1</div>
+                                <div class="family-stat-label">待复诊</div>
+                            </div>
+                            <div class="family-stat">
+                                <div class="family-stat-number">2</div>
+                                <div class="family-stat-label">预警</div>
+                            </div>
+                        </div>
+                        <div class="family-actions">
+                            <button class="family-action-btn view-btn" onclick="viewFamilyMember('zhangsan')">查看</button>
+                            <button class="family-action-btn edit-btn" onclick="editFamilyMember('zhangsan')">编辑</button>
+                            <button class="family-action-btn delete-btn" onclick="deleteFamilyMember('zhangsan')">删除</button>
+                        </div>
+                    </div>
+
+                    <div class="family-member-card">
+                        <div class="family-member-header">
+                            <h4>李四 (母亲)</h4>
+                            <span>糖尿病</span>
+                        </div>
+                        <div class="family-stats">
+                            <div class="family-stat">
+                                <div class="family-stat-number">3/3</div>
+                                <div class="family-stat-label">今日服药</div>
+                            </div>
+                            <div class="family-stat">
+                                <div class="family-stat-number">0</div>
+                                <div class="family-stat-label">待复诊</div>
+                            </div>
+                            <div class="family-stat">
+                                <div class="family-stat-number">1</div>
+                                <div class="family-stat-label">预警</div>
+                            </div>
+                        </div>
+                        <div class="family-actions">
+                            <button class="family-action-btn view-btn" onclick="viewFamilyMember('lisi')">查看</button>
+                            <button class="family-action-btn edit-btn" onclick="editFamilyMember('lisi')">编辑</button>
+                            <button class="family-action-btn delete-btn" onclick="deleteFamilyMember('lisi')">删除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 家人详细信息查看页面 -->
+        <div id="family-detail" class="tab-content">
+            <div class="card">
+                <h3 id="family-member-name">张三 (父亲)</h3>
+                <button class="btn" style="float: right;" onclick="showTab('family')">返回</button>
+                <div style="clear: both;"></div>
+                
+                <div class="dashboard-grid" style="margin-top: 20px;">
+                    <div class="card">
+                        <h3>📋 今日服药清单</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">2</div>
+                                <div class="stat-label">待服用</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">1</div>
+                                <div class="stat-label">已完成</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">0</div>
+                                <div class="stat-label">漏服</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <p><span class="pill-icon"></span> 氨氯地平片 08:00 - <span class="status-pending">待服用</span></p>
+                            <p><span class="pill-icon"></span> 阿司匹林肠溶片 20:00 - <span class="status-pending">待服用</span></p>
+                            <p><span class="pill-icon"></span> 二甲双胍缓释片 12:00 - <span class="status-completed">已完成</span></p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📦 药品余量预警</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">2</div>
+                                <div class="stat-label">需补充</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <p style="color: var(--danger-color);"><span class="pill-icon"></span> 氨氯地平片 (剩余5片)</p>
+                            <p style="color: var(--warning-color);"><span class="pill-icon"></span> 阿司匹林肠溶片 (剩余12片)</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>⏰ 下次复诊提醒</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">7</div>
+                                <div class="stat-label">天后复诊</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <p><strong>心血管内科</strong></p>
+                            <p>李医生 • 北京协和医院</p>
+                            <p>2024-01-15</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📊 本周服药依从率</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number">92%</div>
+                                <div class="stat-label">依从率</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%;"></div>
+                            </div>
+                            <p style="text-align: center; margin-top: 10px; color: var(--primary-dark);">良好！继续保持</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h3>💊 药品库</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>药品名称</th>
+                                <th>规格</th>
+                                <th>用法用量</th>
+                                <th>余量</th>
+                                <th>有效期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>氨氯地平片</td>
+                                <td>5mg×28片</td>
+                                <td>每日1次，每次1片</td>
+                                <td style="color: var(--danger-color); font-weight: bold;">5片</td>
+                                <td style="color: var(--danger-color); font-weight: bold;">2024-02-15</td>
+                                <td>
+                                    <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">编辑</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>阿司匹林肠溶片</td>
+                                <td>100mg×30片</td>
+                                <td>每日1次，每次1片</td>
+                                <td style="color: var(--warning-color); font-weight: bold;">12片</td>
+                                <td>2024-03-20</td>
+                                <td>
+                                    <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">编辑</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h3>🏥 复诊计划</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>科室</th>
+                                <th>医生</th>
+                                <th>医院</th>
+                                <th>复诊日期</th>
+                                <th>剩余天数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>心血管内科</td>
+                                <td>李医生</td>
+                                <td>北京协和医院</td>
+                                <td>2024-01-15</td>
+                                <td style="color: var(--warning-color); font-weight: bold;">7天</td>
+                                <td>
+                                    <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;">详情</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加药品表单 -->
+        <div id="add-medication" class="tab-content">
+            <div class="card">
+                <h3>➕ 添加药品</h3>
+                
+                <div class="form-group">
+                    <label>药品名称 *</label>
+                    <input type="text" placeholder="请输入药品名称">
+                </div>
+
+                <div class="form-group">
+                    <label>规格</label>
+                    <input type="text" placeholder="如：5mg×28片">
+                </div>
+
+                <div class="form-group">
+                    <label>每片剂量</label>
+                    <input type="text" placeholder="如：5mg">
+                </div>
+
+                <div class="form-group">
+                    <label>生产厂家</label>
+                    <input type="text" placeholder="请输入生产厂家">
+                </div>
+
+                <div class="form-group">
+                    <label>有效期</label>
+                    <input type="date">
+                </div>
+
+                <div class="form-group">
+                    <label>用药频次</label>
+                    <select>
+                        <option>每日1次</option>
+                        <option>每日2次</option>
+                        <option>每日3次</option>
+                        <option>每日4次</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>每次用量</label>
+                    <input type="number" placeholder="如：1片">
+                </div>
+
+                <div class="form-group">
+                    <label>服用时间</label>
+                    <select>
+                        <option>饭前</option>
+                        <option>饭后</option>
+                        <option>晨起</option>
+                        <option>睡前</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>初始数量</label>
+                    <input type="number" placeholder="如：28片">
+                </div>
+
+                <div class="form-group">
+                    <label>慢病分类</label>
+                    <select>
+                        <option>高血压药</option>
+                        <option>降糖药</option>
+                        <option>降脂药</option>
+                        <option>抗凝药</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+
+                <button class="btn">💾 保存药品信息</button>
+            </div>
+        </div>
+
+        <!-- 添加复诊表单 -->
+        <div id="add-appointment" class="tab-content">
+            <div class="card">
+                <h3>📅 添加复诊计划</h3>
+                
+                <div class="form-group">
+                    <label>复诊科室 *</label>
+                    <select>
+                        <option>心血管内科</option>
+                        <option>内分泌科</option>
+                        <option>神经内科</option>
+                        <option>呼吸科</option>
+                        <option>消化科</option>
+                        <option>其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>主治医生</label>
+                    <input type="text" placeholder="请输入医生姓名">
+                </div>
+
+                <div class="form-group">
+                    <label>医院名称</label>
+                    <input type="text" placeholder="请输入医院名称">
+                </div>
+
+                <div class="form-group">
+                    <label>下次复诊日期 *</label>
+                    <input type="date">
+                </div>
+
+                <div class="form-group">
+                    <label>提前提醒</label>
+                    <select>
+                        <option>提前7天</option>
+                        <option>提前3天</option>
+                        <option>提前1天</option>
+                        <option>当天</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>复诊备注</label>
+                    <textarea rows="3" placeholder="如：需要携带近期检查报告、空腹要求等"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>检查项目</label>
+                    <textarea rows="2" placeholder="如：血压监测、血糖检测、血脂检查等"></textarea>
+                </div>
+
+                <button class="btn">📅 保存复诊计划</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        操作成功！
+    </div>
+
+    <script>
+        // 页面切换功能
+        function showTab(tabId) {
+            // 隐藏所有tab内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // 显示选中的tab内容
+            document.getElementById(tabId).classList.add('active');
+
+            // 更新导航栏激活状态
+            const navLinks = document.querySelectorAll('.header-right nav a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 找到对应的导航链接并激活
+            const activeLink = Array.from(navLinks).find(link => 
+                link.textContent.includes(getTabName(tabId))
+            );
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        function getTabName(tabId) {
+            const names = {
+                'dashboard': '首页',
+                'medications': '药品库',
+                'schedule': '用药计划',
+                'appointments': '复诊管理',
+                'family': '家人管理',
+                'family-detail': '家人详情',
+                'add-medication': '添加药品',
+                'add-appointment': '添加复诊'
+            };
+            return names[tabId];
+        }
+
+        // 家庭成员管理
+        let familyMembers = [
+            {
+                id: 'zhangsan',
+                name: '张三',
+                relation: '父亲',
+                gender: '男',
+                age: 65,
+                disease: '高血压',
+                phone: '13800138000',
+                medications: [
+                    {name: '氨氯地平片', dosage: '5mg×28片', usage: '每日1次，每次1片', stock: 5, expiry: '2024-02-15'},
+                    {name: '阿司匹林肠溶片', dosage: '100mg×30片', usage: '每日1次，每次1片', stock: 12, expiry: '2024-03-20'}
+                ],
+                appointments: [
+                    {department: '心血管内科', doctor: '李医生', hospital: '北京协和医院', date: '2024-01-15', daysLeft: 7}
+                ],
+                todayMedications: [
+                    {name: '氨氯地平片', time: '08:00', status: 'pending'},
+                    {name: '阿司匹林肠溶片', time: '20:00', status: 'pending'},
+                    {name: '二甲双胍缓释片', time: '12:00', status: 'completed'}
+                ],
+                adherenceRate: 92,
+                pendingMeds: 2,
+                completedMeds: 1,
+                missedMeds: 0,
+                lowStockCount: 2,
+                upcomingAppointments: 1
+            },
+            {
+                id: 'lisi',
+                name: '李四',
+                relation: '母亲',
+                gender: '女',
+                age: 62,
+                disease: '糖尿病',
+                phone: '13800138001',
+                medications: [
+                    {name: '二甲双胍缓释片', dosage: '0.5g×20片', usage: '每日2次，每次1片', stock: 18, expiry: '2024-04-10'},
+                    {name: '格列美脲片', dosage: '2mg×15片', usage: '每日1次，每次半片', stock: 8, expiry: '2024-03-05'}
+                ],
+                appointments: [
+                    {department: '内分泌科', doctor: '王医生', hospital: '北京大学人民医院', date: '2024-02-20', daysLeft: 38}
+                ],
+                todayMedications: [
+                    {name: '二甲双胍缓释片', time: '08:00', status: 'completed'},
+                    {name: '二甲双胍缓释片', time: '20:00', status: 'completed'},
+                    {name: '格列美脲片', time: '09:00', status: 'completed'}
+                ],
+                adherenceRate: 100,
+                pendingMeds: 0,
+                completedMeds: 3,
+                missedMeds: 0,
+                lowStockCount: 1,
+                upcomingAppointments: 0
+            }
+        ];
+
+        // 添加家庭成员
+        function addFamilyMember() {
+            const name = document.querySelector('#family input[placeholder="请输入家人姓名"]').value;
+            const relation = document.querySelector('#family select:nth-child(2)').value;
+            const gender = document.querySelector('#family select:nth-child(3)').value;
+            const age = document.querySelector('#family input[placeholder="请输入年龄"]').value;
+            const disease = document.querySelector('#family input[placeholder="如：高血压、糖尿病等"]').value;
+            const phone = document.querySelector('#family input[placeholder="请输入联系电话"]').value;
+
+            if (!name || !age) {
+                alert('请填写必填项！');
+                return;
+            }
+
+            const newMember = {
+                id: name.toLowerCase().replace(/\s+/g, ''),
+                name: name,
+                relation: relation,
+                gender: gender,
+                age: parseInt(age),
+                disease: disease,
+                phone: phone,
+                medications: [],
+                appointments: [],
+                todayMedications: [],
+                adherenceRate: 0,
+                pendingMeds: 0,
+                completedMeds: 0,
+                missedMeds: 0,
+                lowStockCount: 0,
+                upcomingAppointments: 0
+            };
+
+            familyMembers.push(newMember);
+            showNotification('家人信息已添加！');
+            
+            // 清空表单
+            document.querySelector('#family input[placeholder="请输入家人姓名"]').value = '';
+            document.querySelector('#family input[placeholder="请输入年龄"]').value = '';
+            document.querySelector('#family input[placeholder="如：高血压、糖尿病等"]').value = '';
+            document.querySelector('#family input[placeholder="请输入联系电话"]').value = '';
+            
+            // 刷新家庭成员列表
+            renderFamilyList();
+        }
+
+        // 查看家庭成员详情
+        function viewFamilyMember(memberId) {
+            const member = familyMembers.find(m => m.id === memberId);
+            if (member) {
+                document.getElementById('family-member-name').textContent = `${member.name} (${member.relation})`;
+                showTab('family-detail');
+            }
+        }
+
+        // 编辑家庭成员
+        function editFamilyMember(memberId) {
+            const member = familyMembers.find(m => m.id === memberId);
+            if (member) {
+                document.querySelector('#family input[placeholder="请输入家人姓名"]').value = member.name;
+                document.querySelector('#family select:nth-child(2)').value = member.relation;
+                document.querySelector('#family select:nth-child(3)').value = member.gender;
+                document.querySelector('#family input[placeholder="请输入年龄"]').value = member.age;
+                document.querySelector('#family input[placeholder="如：高血压、糖尿病等"]').value = member.disease;
+                document.querySelector('#family input[placeholder="请输入联系电话"]').value = member.phone;
+                
+                showNotification('已加载家人信息，可直接修改');
+            }
+        }
+
+        // 删除家庭成员
+        function deleteFamilyMember(memberId) {
+            if (confirm('确定要删除这个家庭成员吗？此操作不可恢复。')) {
+                familyMembers = familyMembers.filter(m => m.id !== memberId);
+                showNotification('家庭成员已删除！');
+                renderFamilyList();
+            }
+        }
+
+        // 渲染家庭成员列表
+        function renderFamilyList() {
+            const container = document.getElementById('family-members-list');
+            container.innerHTML = '';
+
+            familyMembers.forEach(member => {
+                const card = document.createElement('div');
+                card.className = 'family-member-card';
+                card.innerHTML = `
+                    <div class="family-member-header">
+                        <h4>${member.name} (${member.relation})</h4>
+                        <span>${member.disease}</span>
+                    </div>
+                    <div class="family-stats">
+                        <div class="family-stat">
+                            <div class="family-stat-number">${member.completedMeds}/${member.pendingMeds + member.completedMeds}</div>
+                            <div class="family-stat-label">今日服药</div>
+                        </div>
+                        <div class="family-stat">
+                            <div class="family-stat-number">${member.upcomingAppointments}</div>
+                            <div class="family-stat-label">待复诊</div>
+                        </div>
+                        <div class="family-stat">
+                            <div class="family-stat-number">${member.lowStockCount}</div>
+                            <div class="family-stat-label">预警</div>
+                        </div>
+                    </div>
+                    <div class="family-actions">
+                        <button class="family-action-btn view-btn" onclick="viewFamilyMember('${member.id}')">查看</button>
+                        <button class="family-action-btn edit-btn" onclick="editFamilyMember('${member.id}')">编辑</button>
+                        <button class="family-action-btn delete-btn" onclick="deleteFamilyMember('${member.id}')">删除</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 通知功能
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // 模拟数据更新
+        function updateDashboardStats() {
+            // 这里可以添加实际的数据更新逻辑
+            document.getElementById('pending-count').textContent = Math.floor(Math.random() * 5);
+            document.getElementById('completed-count').textContent = Math.floor(Math.random() * 3);
+            document.getElementById('missed-count').textContent = Math.floor(Math.random() * 2);
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认时间
+            const now = new Date();
+            const nextAppointmentDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+            document.querySelector('input[type="date"]').valueAsDate = nextAppointmentDate;
+            
+            // 初始化家庭成员列表
+            renderFamilyList();
+            
+            // 模拟一些交互事件
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (this.textContent.includes('保存') || this.textContent.includes('添加')) {
+                        showNotification('保存成功！');
+                    }
+                });
+            });
+
+            // 模拟服药打卡
+            document.querySelectorAll('.btn').forEach(btn => {
+                if (btn.textContent.includes('已服用')) {
+                    btn.addEventListener('click', function() {
+                        showNotification('服药打卡成功！');
+                        this.textContent = '已打卡';
+                        this.disabled = true;
+                        this.style.backgroundColor = '#50C878';
+                    });
+                }
+            });
+        });
+
+        // 浏览器通知权限请求
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        console.log('通知权限已获得');
+                    }
+                });
+            }
+        }
+
+        // 发送浏览器通知
+        function sendBrowserNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💧</text></svg>'
+                });
+            }
+        }
+
+        // 模拟定时提醒
+        setInterval(function() {
+            const hour = new Date().getHours();
+            if (hour === 8 || hour === 12 || hour === 20) { // 早上8点、中午12点、晚上8点提醒
+                sendBrowserNotification('服药提醒', '该到服药时间了，请按时服药！');
+            }
+        }, 60000); // 每分钟检查一次
+
+        // 请求通知权限
+        requestNotificationPermission();
+    </script>
+</body>
+</html>
